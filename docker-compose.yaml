@@ -1,22 +1,32 @@
 version: '3.8'
 services:
+
+  nginx:
+    build: ./nginx
+    ports: 
+      - "80:80"
+    restart: always
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - goals-net
+      
   backend:
     build: ./backend
-
     ports:
       - "5000:5000"
     volumes:
       - logs:/app/logs
+    networks:
+      - goals-net
 
   frontend:
     build: ./frontend
     depends_on:
       - backend
-
-    ports:
-      - "3000:3000"
-    stdin_open: true
-    tty: true
+    networks:
+      - goals-net
   
   mongodb:
     image: mongo:7.0
@@ -25,8 +35,11 @@ services:
       MONGO_INITDB_ROOT_USERNAME: tanvir
       MONGO_INITDB_ROOT_PASSWORD: tanvir123
       MONGO_INITDB_DATABASE: GoalsDB
+    networks:
+      - goals-net
 
 volumes:
   logs:
 
-
+networks:
+  goals-net:
