@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+
+    ports:
+      - "5000:5000"
+    volumes:
+      - logs:/app/logs
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+  
+  mongodb:
+    image: mongo:7.0
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: tanvir
+      MONGO_INITDB_ROOT_PASSWORD: tanvir123
+      MONGO_INITDB_DATABASE: GoalsDB
+
+volumes:
+  logs:
+
+
