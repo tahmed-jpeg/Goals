@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata: 
+  name: ingress-service 
+spec: 
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: client-clusterip
+                port:
+                  number: 3000
+          - path: /goals
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: server-clusterip
+                port:
+                  number: 5000

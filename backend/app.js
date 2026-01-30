@@ -84,7 +84,7 @@ app.delete('/goals/:id', async (req, res) => {
 });
 
 mongoose.connect(
-  `mongodb+srv://tanvir:tanvir123@cluster0.slv2xed.mongodb.net/?appName=Cluster0`,
+  `mongodb://tanvir:tanvir123@mongodb:27017`,
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
