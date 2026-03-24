@@ -1,0 +1,12 @@
+apiVersion: eksctl.io/vlalpha5
+kind: ClusterConfig
+metadata:
+  name: cluster-01
+  region: us-east-1
+nodeGroups:
+  - name: nodegroup-1
+    instanceType: t3.micro
+    desiredCapacity: 1
+    volumeSize: 20
+    ssh:
+      allow: false

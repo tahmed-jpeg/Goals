@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: client
-        image:  tahmed2026/class-frontend:0.1
+        image:  tahmed2026/class-frontend:0.2
         ports:
         - containerPort: 3000
 ---

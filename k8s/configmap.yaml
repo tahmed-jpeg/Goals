@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: cluster-url
 data:
-  database: "mongodb:27017"
+  database: "mongodb://tanvir:tanvir123@mongodb:27017"

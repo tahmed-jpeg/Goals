@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-test1-kube-prometheus-stac-alertmanager
+  namespace: monitor
+  labels: 
+    app: kube-prometheus-stack
+    chart: kube-prometheus-stack
+    release: kubeprometheus-stack
+type: Opaque
+stringData:
+  alertmanager.yaml: | 
