@@ -1,0 +1,91 @@
+---
+- name: Jenkins Server Configuration
+  hosts: jenkins
+  become: true
+
+  tasks: 
+    - name: Update apt cache
+      apt: 
+        update_cache: yes
+    
+    - name: Install and/or update required packages
+      apt:
+        name:
+          - fontconfig
+          - openjdk-21-jdk
+          - ca-certificates
+          - curl
+          - gnupg
+        state: present
+
+    - name: Create keyrings directory
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Adding GPG Key for Jenkins
+      get_url:
+        url: https://pkg.jenkins.io/debian/jenkins.io-2026.key
+        dest: /etc/apt/keyrings/jenkins-keyring.asc
+        mode: '0644'
+    
+    - name: Adding Jenkins repository
+      apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+        state: present
+        filename: jenkins
+    
+    - name: Updating apt cache after addition of Jenkins repository
+      apt:
+        update_cache: yes
+    
+    - name: Install Jenkins
+      apt: 
+        name: jenkins
+        state: present
+    
+    - name: Start and enable Jenkins
+      systemd:
+        name: jenkins
+        state: started
+        enabled: yes
+    
+    - name: Install Docker
+      apt: 
+        name: docker.io
+        state: present
+
+    - name: Start and enable Docker
+      systemd: 
+        name: docker
+        state: started
+        enabled: yes
+    
+    - name: Adding Jenkins user to Docker group
+      user: 
+        name: jenkins
+        groups: docker
+        append: yes
+    
+    - name: Install and unzip
+      apt:
+        name: unzip
+        state: present
+      
+    - name: Download Sonar Scanner
+      get_url:
+        url: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-8.0.1.6346-linux-x64.zip
+        dest: /opt/sonar-scanner.zip
+    
+    - name: Unzip Sonar Scanner
+      unarchive:
+        src: /opt/sonar-scanner.zip
+        dest: /opt/
+        remote_src: yes
+
+    - name: Create sonar-scanner symlink
+      file: 
+        src: /opt/sonar-scanner-8.0.1.6346-linux-x64/bin/sonar-scanner
+        dest: /usr/local/bin/sonar-scanner
+        state: link

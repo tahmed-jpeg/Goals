@@ -1,0 +1,89 @@
+---
+- name: Configuring SonarQube Server
+  hosts: sonarqube
+  become: true
+
+  tasks: 
+    - name: Updating apt cache
+      apt:
+        update_cache: yes
+    
+    - name: Installing required packages
+      apt: 
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+        state: present
+
+    - name: Installing Docker
+      apt: 
+        name: docker.io
+        state: present
+    
+    - name: Starting and enabling Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Set vm.max_map_count for SonarQube
+      sysctl:
+        name: vm.max_map_count
+        value: '524288'
+        state: present
+        reload: yes
+    
+    - name: Set fs.file-max for SonarQube
+      sysctl:
+        name: fs.file-max
+        value: '131072'
+        state: present
+        reload: yes
+    
+    - name: Create Docker Compose CLI plugin directory
+      file:
+        path: /usr/local/lib/docker/cli-plugins
+        state: directory
+        mode: '0755'
+    
+    - name: Download Docker Compose plugin
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64
+        dest: /usr/local/lib/docker/cli-plugins/docker-compose
+        mode: '0755'
+
+    - name: Create SonarQube directory
+      file:
+        path: /opt/sonarqube
+        state: directory
+        mode: '0755'
+
+    - name: Creating a Docker Compose file for SonarQube
+      copy: 
+        dest: /opt/sonarqube/docker-compose.yml
+        content: |
+          version: '3'
+          services: 
+            sonarqube:
+              image: sonarqube:lts-community
+              container_name: sonarqube
+              restart: always
+              ports:
+                - "9000:9000"
+              environment:
+                - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+              volumes:
+                - sonarqube_data:/opt/sonarqube/data
+                - sonarqube_logs:/opt/sonarqube/logs
+                - sonarqube_extensions:/opt/sonarqube/extensions
+          volumes:
+            sonarqube_data:
+            sonarqube_logs:
+            sonarqube_extensions:
+
+
+    - name: Run SonarQube with Docker Compose
+      shell: docker compose up -d
+      args:
+        chdir: /opt/sonarqube
