@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Clone Source Code') {
             steps {
-                git branch: 'phase-5',
+                git branch: 'phase-7',
                     credentialsId: 'github-credentials',
                     url: 'https://github.com/tahmed-jpeg/Goals.git'
             }
