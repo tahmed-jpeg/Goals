@@ -7,6 +7,7 @@ pipeline {
         FRONTEND_IMAGE = "tahmed2026/goals-frontend"
         BACKEND_IMAGE = "tahmed2026/goals-backend"
         IMAGE_TAG = "${BUILD_NUMBER}"
+        CONFIG_REPO = "https://github.com/tahmed-jpeg/goals-config-repo.git"
     }
 
     stages {
@@ -62,6 +63,25 @@ pipeline {
                 """
             }
         }
+
+        stage('Update Manifest') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                    sh """
+                        rm -rf goals-config-repo
+                        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/tahmed-jpeg/goals-config-repo.git
+                        cd goals-config-repo
+                        sed -i 's|${FRONTEND_IMAGE}:.*|${FRONTEND_IMAGE}:${IMAGE_TAG}|g' manifest/frontend-deployment.yaml
+                        sed -i 's|${BACKEND_IMAGE}:.*|${BACKEND_IMAGE}:${IMAGE_TAG}|g' manifest/backend-deployment.yaml
+                        git config user.email "jenkins@goals-app.com"
+                        git config user.name "Jenkins"
+                        git add manifest/frontend-deployment.yaml manifest/backend-deployment.yaml
+                        git commit -m "update image tags to ${IMAGE_TAG}"
+                        git push https://${GIT_USER}:${GIT_TOKEN}@github.com/tahmed-jpeg/goals-config-repo.git main
+                    """
+                }
+            }
+        }
     }
 
     post {
@@ -71,17 +91,15 @@ pipeline {
                 link: env.BUILD_URL,
                 result: currentBuild.currentResult,
                 title: "goals-pipeline",
-                webhookURL: "https://discord.com/api/webhooks/1495957760465043486/8mr4wgYhauRiY5vuh6jg7h4UCJwpQ_eYHNPSk5CE9C7npt00dvHV6GvClhNMzJdt9Md0"
+                webhookURL: "https://discord.com/api/webhooks/1500554283064758445/h0FS-jaXZgCP9OIevBYjJXOH02HP_yOFOcT6NcJ8xqvxeCg0vWzLV53pesjBLS4rzHeZ"
         }
-
         failure {
             discordSend description: "Pipeline FAILED - Build #${BUILD_NUMBER}",
                 footer: "Goals App CI/CD Pipeline",
                 link: env.BUILD_URL,
                 result: currentBuild.currentResult,
                 title: "goals-pipeline",
-                webhookURL: "https://discord.com/api/webhooks/1495957760465043486/8mr4wgYhauRiY5vuh6jg7h4UCJwpQ_eYHNPSk5CE9C7npt00dvHV6GvClhNMzJdt9Md0"
+                webhookURL: "https://discord.com/api/webhooks/1500554283064758445/h0FS-jaXZgCP9OIevBYjJXOH02HP_yOFOcT6NcJ8xqvxeCg0vWzLV53pesjBLS4rzHeZ"
         }
     }
-
 }
